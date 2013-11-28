@@ -50,10 +50,13 @@ lines(wavelength10,spec_snvC2[1,],col="green")
 #####Calculate the EPO####
 #D is the difference matrix (between dry and wet spectra)
 
-D=as.matrix(spec_snvC0-spec_snvC1)
+D=as.matrix(spec_snvC0-spec_snvC2)
 npc<-4  # define no. EPO factors
 P<- epo(D,npc)
 
+
+# save(P,file='EPO_transformation_matrix.RDATA')
+setwd(prev_dir)
 # save(P,file='EPO_transformation_matrix.RDATA')
 
 # #Project the spectra

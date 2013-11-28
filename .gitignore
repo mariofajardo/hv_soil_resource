@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+RData/
+.RData
+plots/
+plots/check Absorb.pdf
+csv/
+*.pdf

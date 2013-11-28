@@ -18,24 +18,12 @@ sample_hv_details<-lapply(hv_pits_DATA,function(x) {
   spectra})
 
 pboptions(type='txt',style=3)
-# check_plots(raw_hv_spectra,'Absorb','Absorb')
 cont_DATA<-pblapply(raw_hv_spectra,correct_step)   
-# check_plots(cont_DATA,'Absorbance','Absorbance')
 trim_DATA<- pblapply(cont_DATA,function(x) trimSpec(x, wavlimits=range(500:2300))) 
 abs_DATA<-pblapply(trim_DATA,function(x) absorbance<-log(1/x))  
-# check_plots(abs_DATA,'Absorbance','Absorbance')
 strip_DATA<- pblapply(abs_DATA,function(x) strip_spectra(x,c(500:2300),which=10)) 
-#check_plots(strip_DATA,'Stripped spectra','Absorbance')
 filt_DATA<- pblapply(strip_DATA,function(x) filter_sg(x, n = 11, p = 2, m = 0)) 
-# check_plots(filt_DATA,'S-G Filter','Absorbance')
 snVC_DATA<- pblapply(filt_DATA,snvBLC) 
-
-#zlim <- range(data3d)
-#zlen <- zlim[2] - zlim[1] 
-#colorlut <- terrain.colors(zlen,alpha=0) # height color lookup table
-#colorlut <- colorRampPalette(c("blue", "orange"))( zlen )
-#col <- colorlut[data3d-zlim[1]+1 ]
-#new<-data3d[rep( 1:nrow(data3d),each=1),]
 
 input_data<-snVC_DATA
 
@@ -284,6 +272,7 @@ filt_DATA<- pblapply(abs_DATA,function(x) filter_sg(x, n = 11, p = 2, m = 0))
 strip_DATA<- pblapply(filt_DATA,function(x) strip_spectra(x,c(400:2300),which=10)) 
 
 
+
 spec_cont <- as.data.frame(do.call(rbind,strip_DATA))
 
 pr_spectra<-prcomp(spec_cont, center=T,scale=T) 
@@ -292,7 +281,7 @@ pr_scores <- pr_spectra$x # principal component scores
 
 number_of_classes<-4 ###add number
 palette(terrain.colors(number_of_classes))
-fuzzy_data_selected<- lapply(fanny_data_whole_spectra_pc_euc_EPO,function(x) x[[4]])
+fuzzy_data_selected<- lapply(fanny_data_whole_spectra_pc_euc_EPO,function(x) x[[3]])
 
 
 fuzzy_data_selected<- do.call(rbind,lapply(fuzzy_data_selected,function(y) matrix(y$clustering,ncol=1,byrow=F)))
@@ -312,10 +301,18 @@ for (i in 1:number_of_classes){
   c1<- mean(pr_scores[sample3d_details$fuzzy_data_selected==i,1])
   c2<- mean(pr_scores[sample3d_details$fuzzy_data_selected==i,2])
   c3<- mean(pr_scores[sample3d_details$fuzzy_data_selected==i,3])
+  
+  c4<- mean(pr_scores[sample3d_details$b.master_hor==levels(sample3d_details$b.master_hor)[i],1])
+  c5<- mean(pr_scores[sample3d_details$b.master_hor==levels(sample3d_details$b.master_hor)[i],2])
+  c6<- mean(pr_scores[sample3d_details$b.master_hor==levels(sample3d_details$b.master_hor)[i],3])
+  
   centremean <- c(c1,c2,c3)
+  centremean1 <- c(c4,c5,c6)
   plot3d(ellipse3d(cov(pr_scores[sample3d_details$fuzzy_data_selected==i,1:3]),col=palette()[i],centre=centremean,level=.4),alpha=.12,add=T)
+  plot3d(ellipse3d(cov(pr_scores[sample3d_details$b.master_hor==levels(sample3d_details$b.master_hor)[i],1:3]),col=palette()[i],centre=centremean1,level=.4),add=T,alpha=.1)
   segments3d(c(0,c1),c(0,c2),c(0,c3),lwd=2,col='black')
-}
+  segments3d(c(0,c4),c(0,c5),c(0,c6),lwd=2,col='black')
+  }
 
 
 
