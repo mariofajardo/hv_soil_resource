@@ -22,7 +22,7 @@ tmp_DATA <- pblapply(files,function(x){       ##tmp_data <-DATA
   Pit <- regmatches(x,regexpr("[[:alnum:]]+(?=[.])",x,perl=T))
   top <- seq(0,by=5,length.out=nrow(tmp2))
   bottom <- seq(5,by=5,length.out=nrow(tmp2))
-  tmp3 <- cbind(File.Name=tmp2$File.Name,Pit=Pit,top=top,bottom=bottom,tmp2[-length(tmp2)])
+  tmp3 <- cbind(File.Name=tmp2$File.Name,Sample=Pit,top=top,bottom=bottom,tmp2[-length(tmp2)])
   tmp3[order(tmp3$File.Name,decreasing=F),] 
   
 }) 
@@ -34,7 +34,7 @@ hor_names <- lapply(list_df,function(x){
 })
 
 insert_columns<- function(a,b){   
- data.frame(File.Name=a$File.Name,a$Pit,top=a$top,bottom=a$bottom,b$hor,b$master_hor,a[-(1:4)])
+ data.frame(File.Name=a$File.Name,Sample=a$Sample,top=a$top,bottom=a$bottom,b$hor,b$master_hor,a[-(1:4)])
 }
 
 hv_pits_DATA <- mapply(insert_columns,tmp_DATA,hor_names,SIMPLIFY=F)

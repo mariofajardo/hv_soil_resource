@@ -41,18 +41,11 @@ abs_DATA<-pblapply(trim_DATA,function(x) absorbance<-log(1/x))
 filt_DATA<- pblapply(abs_DATA,function(x) filter_sg(x, n = 11, p = 2, m = 0)) 
 strip_DATA<- pblapply(filt_DATA,function(x) strip_spectra(x,c(500:2450),which=10))
 snv_DATA <- pblapply(strip_DATA,snvBLC)
-epo_DATA <- pblapply(snv_DATA,function(x) {
-  epo_tmp<-as.matrix(x) %*% P
-  epo_tmp<-data.frame(epo_tmp)
-  colnames(epo_tmp)<-seq(500,2450,by =10)
-  epo_tmp}
-)
 
-check_plots(epo_DATA,'Processed Spectra','Epo_Units')
 
-pr_spectra<-prcomp(do.call(rbind,epo_DATA), center=T,scale=T) 
+pr_spectra<-prcomp(do.call(rbind,snv_DATA), center=T,scale=T) 
 screeplot(pr_spectra)#visualize the PC
-pr_varExp(do.call(rbind,epo_DATA))#check the acummulative variation on the data
+pr_varExp(do.call(rbind,snv_DATA))#check the acummulative variation on the data
 pr_scores <- pr_spectra$x 
 
 ###do some convex.hull analysis###
@@ -85,7 +78,7 @@ plot(pr_scores[,1], pr_scores[,2], xlab="PCA 1", ylab="PCA 2", xlim=c(min(pr_sco
 points(pr_scores[which(chiMat[,3]==0),1:2],pch='X',col='red')
 
 ###Remove outliers from original dataset
-original_data <-do.call(rbind,epo_DATA)
+original_data <-do.call(rbind,snv_DATA)
 original_details <- data.frame(do.call(rbind,sampleg_details))
 
 new_data <- original_data[chiMat[,3] == 1,]
@@ -124,29 +117,29 @@ fanny_by_sample_cont <- unlist(sapply(fuzzy_data,function(x) x$clustering))
 
 #####Discriminant analysis in jmp####
 
-tmp <- data.frame(cluster=fanny_by_sample_cont,do.call(rbind,no_out_ground_DATA))
+# tmp <- data.frame(cluster=fanny_by_sample_cont,do.call(rbind,no_out_ground_DATA))
 
 
 # cluster1 <- replace(tmp[,1],tmp[,1]!=1,0)
 # cluster2 <- replace(tmp[,1],tmp[,1]!=2,0)
 # cluster3 <- replace(tmp[,1],tmp[,1]!=3,0)
 
-write.csv(tmp,file='cda_test.csv')
-
-
-responseY <- as.matrix(tmp[,1])
-predictorX <- as.matrix(tmp[,-c(1:7)])
-
-
-pca <- princomp(predictorX, cor=T) # principal components analysis using correlation matrix
-pc.comp <- pca$scores
-pc.comp1 <- -1*pc.comp[,1] # principal component 1 scores (negated for convenience)
-pc.comp2 <- -1*pc.comp[,2] # principal component 2 scores (negated for convenience)
-
-library(MASS)
-model.lda <- MASS::(responseY ~ pc.comp1+pc.comp2)
-predict(model.lda)$class
-plot(model.lda)
+# write.csv(tmp,file='cda_test.csv')
+# 
+# 
+# responseY <- as.matrix(tmp[,1])
+# predictorX <- as.matrix(tmp[,-c(1:7)])
+# 
+# 
+# pca <- princomp(predictorX, cor=T) # principal components analysis using correlation matrix
+# pc.comp <- pca$scores
+# pc.comp1 <- -1*pc.comp[,1] # principal component 1 scores (negated for convenience)
+# pc.comp2 <- -1*pc.comp[,2] # principal component 2 scores (negated for convenience)
+# 
+# library(MASS)
+# model.lda <- MASS::(responseY ~ pc.comp1+pc.comp2)
+# predict(model.lda)$class
+# plot(model.lda)
 
 #####Cluster means####
 
@@ -161,9 +154,9 @@ tmp1 <- lapply(tmp,function (x) {
   })
   tmp4<-do.call(rbind,tmp3)
 })
-clus_mean<-do.call(rbind,tmp1)  
+clus_mean_snv<-do.call(rbind,tmp1)  
 
 View(clus_mean)
 
-write.csv(clus_mean,file='cda_mean_clus_test.csv')
+write.csv(clus_mean_snv,file='cda_mean_clus_test_snv.csv')
 
