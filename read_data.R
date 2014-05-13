@@ -27,7 +27,8 @@ tmp_DATA <- pblapply(files,function(x){       ##tmp_data <-DATA
   
 }) 
 
-hor <- sort_df(read.csv('NIR_hor.csv',header=T))     
+hor <- read.csv('NIR_hor.csv',header=T)  
+hor$id <-factor(hor$id,levels=unique(hor$id)) #to prevent the creaion of unsorted factors
 list_df <- as.list.data.frame(split(hor,hor$id))
 hor_names <- lapply(list_df,function(x){
  tmp <- data.frame(hor = rep(x$hor,times=x$bottom-x$top+1),master_hor = rep(x$master_hor,times=x$bottom-x$top+1))

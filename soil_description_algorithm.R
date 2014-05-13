@@ -1,5 +1,4 @@
 ###Soil description algorithm###
-
 library(tripack)
 library(SDMTools)
 library(rgl) 
@@ -34,8 +33,6 @@ rawg_spectra<-lapply(ground_DATA,function(x) {
 sampleg_details<-lapply(ground_DATA,function(x) {
   spectra<-x[1:6]
   spectra})
-
-
 
 
 cont_DATA<-pblapply(rawg_spectra,correct_step)    
@@ -100,9 +97,9 @@ new_details<- original_details[chiMat[,3] == 1,]
 new_pr_scores<- pr_scores[chiMat[,3] == 1,]
 
 
-####exclude the samples with too more than 5 outliers (10% of the the observations on a soil profile of 1m)####
+####exclude the samples with too more than 10 outliers (20% of the the observations on a soil profile of 1m)####
 count <- table(original_details[chiMat[,3] == 0,]$Sample)
-exclude <- names(count)[count > 5]
+exclude <- names(count)[count > 10]
 no_out_details <- new_details[!(new_details$Sample %in% exclude),]
 no_out_details$Sample <- droplevels(no_out_details$Sample)
 
@@ -262,7 +259,7 @@ for (i in 1:num_clusters){
   c2<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,2])
   c3<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,3])
   centremean <- c(c1,c2,c3)
-  plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.4),alpha=.12,add=T)
+  plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.7),alpha=.12,add=T)
   segments3d(c(0,c1),c(0,c2),c(0,c3),lwd=2,col='black')
 }
 
@@ -403,7 +400,7 @@ for (i in 1:num_clusters){
   c2<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,2])
   c3<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,3])
   centremean <- c(c1,c2,c3)
-  plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.95),alpha=.12,add=T)
+  plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.7),alpha=.12,add=T)
   segments3d(c(0,c1),c(0,c2),c(0,c3),lwd=2,col='black')
 }
 
@@ -556,10 +553,10 @@ histogram(~test_clas_details_hv$b.master_hor|test_clas_details_hv$cluster)
 ####Horizon predictions####
 
 ####Dataset A###
-setwd('..//plots')
+setwd('plots/')
 pdf('observed_vs_predicted_horizons_3clust.pdf',width=10,height=6)
 input_data <-no_out_ground_DATA
-
+par(mfrow=c(1,2))
 for (j in 1:length(input_data)){  
 num_clusters <-3 ##select the decided number of clusters (up to 6)
 fuzzy_data <-list()
@@ -591,13 +588,13 @@ setwd(prev_dir)
 ##note : close the previous pdf to create the next one##
 
 ####Dataset B###
-##bring in the fuzzy clustering of the in_situ samples##
 setwd('..//plots')
+par(mfrow=c(1,1))
 pdf('observed_vs_predicted_horizons_in_situ_3clust.pdf',width=10,height=6)
 input_data <-hv_pits_DATA
 
  for (j in 1:length(input_data)){  
-  num_clusters <-3
+  num_clusters <-3 ##select the decided number of clusters (up to 6)
   fuzzy_hv_data <-list()
   for (i in 1:length(input_data)){
     fuzzy_hv_data[[i]]<- fanny_pits_pc_euc_EPO[[i]][[num_clusters]]
@@ -626,5 +623,190 @@ shell.exec('observed_vs_predicted_horizons_in_situ_3clust.pdf')
 
 setwd(prev_dir)
 
+####plotmemberships####
+par(mfrow=c(2,1))
 
+a<-fanny_data_by_sample_pc_euc_no_out[[1]][[3]] #sample 3 with 4 clusters
+str(a)
+
+plot(a$membership[,1],type='l')
+lines(a$membership[,2],type='l',col='blue')
+lines(a$membership[,3],type='l',col='red')
+
+a<-fanny_data_by_sample_pc_euc_no_out[[1]][[2]] #sample 3 with 4 clusters
+
+str(a)
+
+plot(a$membership[,1],type='l')
+lines(a$membership[,2],type='l',col='blue')
+# lines(a$membership[,3],type='l',col='red')
+# lines(a$membership[,4],type='l',col='green')
+
+
+####plotmemberships pits####
+par(mfrow=c(2,1))
+
+a<-fanny_pits_pc_euc_EPO[[8]][[2]] #sample 3 with 4 clusters
+str(a)
+
+plot(a$membership[,1],type='l')
+lines(a$membership[,2],type='l',col='blue')
+lines(a$membership[,3],type='l',col='red')
+
+a<-fanny_pits_pc_euc_EPO[[8]][[4]] #sample 3 with 4 clusters
+
+str(a)
+
+plot(a$membership[,1],type='l')
+lines(a$membership[,2],type='l',col='blue')
+lines(a$membership[,3],type='l',col='red')
+lines(a$membership[,4],type='l',col='green')
+par(mfrow=c(1,1))
+####PREDICTIONS####
+require(Cubist)
+require(naturalsort)
+
+#####Bring the Carbon data####
+setwd('RData/')
+load('lhc_samples.RDATA')
+load('selected_rnd_samples_HVHR.RDATA')
+setwd(prev_dir)
+setwd('../../CNS')
+lhc_calib_tmp <-read.csv('lhc_last_edition.csv')
+lhc_calib_tmp <-data.frame(instrument_id=lhc_calib_tmp$Name,TOC=lhc_calib_tmp$Percent2)
+lhc_calib_tmp <- lhc_calib_tmp[naturalorder(as.character(lhc_calib_tmp$instrument_id)),][1:100,]
+
+rnd_valid_tmp <-read.csv('rnd_calibration_points.csv')
+rnd_valid_tmp <-data.frame(instrument_id=rnd_valid_tmp$Name,TOC=rnd_valid_tmp$Percent2)
+rnd_valid_tmp <- rnd_valid_tmp[naturalorder(as.character(rnd_valid_tmp$instrument_id)),][1:100,]
+setwd(prev_dir)
+
+data_a_details <- sample3d_cluster_details
+data_a_spec<-spec_cluster_cont
+
+#Calibration set
+spec_c <-data_a_spec[data_a_details$File.Name%in%lhc_selected_details$File.Name,]            # spectra used for calibration
+colnames(spec_c)<-seq(500,2450,by=10)
+details<-data_a_details[data_a_details$File.Name%in%lhc_selected_details$File.Name,]
+details$cluster<-as.factor(details$cluster)
+soil_c <-lhc_calib_tmp[lhc_selected_details$File.Name%in%details$File.Name,]$TOC         # data used for calibration
+
+#Validation set
+setwd('../../../Hunter/pits_2013/')
+pits_analysis <-read.csv(file='analysis.csv',dec='.')
+pits_analysis$sample<-factor(pits_analysis$sample,levels=unique(pits_analysis$sample))
+####fitting splines to horizon observations####
+# Start
+source("C:/Users/mfaj1435/Documents/University of Sydney/PhD/Toolbox_scripts_etc/ea_spline_f.r")
+
+var <- 'TOC'
+lam <- 0.5  # Lambda value
+d <- t(seq(0,100,by=5)) # GlobalSoilMap.Net specifications or user defined depths
+mxd <- 100 # max depth for spline
+s <- 0.05*mean(pits_analysis$TOC)  # 5% of the standard deviation of the target attribute 
+
+splines<- lapply(levels(pits_analysis$sample),function(x){
+  ans <- ea_spline(mxd,pits_analysis[pits_analysis$sample==x,],var,lam,d,s)
+})
+names(splines) <-levels(pits_analysis$sample)
+
+soil_v<-do.call(rbind,lapply(levels(pits_analysis$sample),function(x){
+  rows<-nrow(pits_analysis[pits_analysis$sample==x,])
+  tmp<-data.frame(sample=x,
+                  top=seq(from=0,by=5,length.out=20),
+                  bottom=seq(from=5,by=5,length.out=20),
+                  TOC=t(splines[[x]][[2]]))
+  }))
+
+soil_v<-na.exclude(soil_v)
+
+soil_v$cluster <- do.call(c,lapply(levels(pits_analysis$sample),function(x) sample3d_cluster_details_hv$cluster[sample3d_cluster_details_hv$Sample==x]))
+soil_v$pred_TOC <-NA
+                                                                        
+
+
+setwd(prev_dir)
+
+
+soil_c.cubist_models <-list()
+soil_c.cubist_models<-lapply(levels(details$cluster),function(x) cubist(spec_c[details$cluster==x,],
+                                                                        soil_c[details$cluster==x],
+                                                                        control=cubistControl(rules=2),
+                                                                        committees=100))     # fit cubist model
+names(soil_c.cubist_models)<-paste0('cluster',levels(details$cluster))
+
+
+
+for (n in levels(details$cluster)){
+soil_v$pred_TOC[soil_v$cluster==n] <- predict(soil_c.cubist_models[[paste0('cluster',n)]],spec_hv_cont[sample3d_cluster_details_hv$cluster==n,])
+}
+test<-goof(soil_v$TOC,soil_v$pred_TOC,col=soil_v$cluster)
+
+global_model<-cubist(spec_c,soil_c,rules=2,committees=100)
+soil_v$pred_global_TOC <-predict(global_model,spec_hv_cont)
+
+test2<-goof(soil_v$TOC,soil_v$pred_global_TOC,col=soil_v$cluster)
+
+test
+test2
+par(mfrow=c(2,4))
+data_validation <- list ()
+for (n in levels(soil_v$sample)){
+  
+plot(soil_v$TOC[soil_v$sample==n],
+     seq(from=5,by=5,length.out=nrow(soil_v[soil_v$sample==n,])),
+     type='l',
+     ylim=c(nrow(soil_v[soil_v$sample==n,])*5,0),
+     xlim=c(0,10),main=n,
+     ylab='Depth',
+     xlab='TOC (%)')
+
+lines(soil_v$pred_TOC[soil_v$sample==n],
+      seq(from=5,by=5,length.out=nrow(soil_v[soil_v$sample==n,])),
+      type='l',
+      col='blue',
+      ylim=c(nrow(soil_v[soil_v$sample==n,])*5,0),
+      xlim=c(0,10))
+
+points(pits_analysis$TOC[pits_analysis$sample==n],
+       rowMeans(cbind(pits_analysis$top[pits_analysis$sample==n],pits_analysis$bottom[pits_analysis$sample==n])),
+       col='red',
+       ylim=c(nrow(soil_v[soil_v$sample==n,])*5,0),
+       xlim=c(0,10))
+
+lines(soil_v$pred_global_TOC[soil_v$sample==n],
+      seq(from=5,by=5,length.out=nrow(soil_v[soil_v$sample==n,])),
+      type='l',
+      col='green',
+      ylim=c(nrow(soil_v[soil_v$sample==n,])*5,0),
+      xlim=c(0,10))
+
+points(x=mapply(function(x,y) mean(soil_v$pred_TOC[soil_v$sample==n][which(soil_v$top[soil_v$sample==n] %in% x):
+                                                   which(soil_v$bottom[soil_v$sample==n] %in% y)]),
+                pits_analysis$top[pits_analysis$sample==n],
+                pits_analysis$bottom[pits_analysis$sample==n],
+                SIMPLIFY=T),
+       y=rowMeans(cbind(pits_analysis$top[pits_analysis$sample==n],
+                        pits_analysis$bottom[pits_analysis$sample==n]))
+       )
+
+data_validation[[n]] <- data.frame(sample=n,
+                                   obs=pits_analysis$TOC[pits_analysis$sample==n],
+                                   pred=mapply(function(x,y) mean(soil_v$pred_TOC[soil_v$sample==n][which(soil_v$top[soil_v$sample==n] %in% x):
+                                                                                                 which(soil_v$bottom[soil_v$sample==n] %in% y)]),
+                                            pits_analysis$top[pits_analysis$sample==n],
+                                            pits_analysis$bottom[pits_analysis$sample==n],
+                                            SIMPLIFY=T),
+                                   cluster= sapply(pits_analysis$top[pits_analysis$sample==n],function(x){
+                                               soil_v$cluster[soil_v$sample==n][which(soil_v$top[soil_v$sample==n] %in% x)]})
+                              )
+
+}
+
+data_validation<-do.call(rbind,data_validation)
+
+pit<-7 
+
+goof(data_validation$obs[data_validation$sample==levels(data_validation$sample)[pit]],data_validation$pred[data_validation$sample==levels(data_validation$sample)[pit]],col=data_validation$cluster)
 ###end###
+

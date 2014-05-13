@@ -4,11 +4,11 @@ library(Cubist)
 library(pls)
 library(spectroscopy)
 library(pbapply)
-load('hv_soil_resource_5cm_resolution_pits_2013.RData')
-load('check_plots.RData')
-load('correct_steps.RData')
+load('RData/hv_soil_resource_5cm_resolution_pits_2013.RData')
+load('RData/check_plots.RData')
+load('RData/correct_steps.RData')
 prev_dir<- getwd()
-setwd('C:/Users/mfaj1435/Documents/University of Sydney/PhD/Data/Lab_work/Spectra/EPO')
+setwd('../../../Lab_work/Spectra/EPO')
 # Data from Minasny et al. (2010), 100 soil samples under 3 different moisture conditions
 spectra0<-read.csv('moisture_dry.txt',header=FALSE)
 spectra1<-read.csv('moisture_wet.txt',header=FALSE)
@@ -21,6 +21,7 @@ abs_filtered0<-filter_sg(spectra0, n = 11, p = 2, m = 0)
 abs_filtered1<-filter_sg(spectra1, n = 11, p = 2, m = 0)
 abs_filtered2<-filter_sg(spectra2, n = 11, p = 2, m = 0)
 
+#CORRECT STEP OF NIR INSTRUMENT
 cont_spectra0<-as.matrix(correct_step(nir_spectra=as.data.frame(abs_filtered0)))
 cont_spectra1<-as.matrix(correct_step(nir_spectra=as.data.frame(abs_filtered1)))
 cont_spectra2<-as.matrix(correct_step(nir_spectra=as.data.frame(abs_filtered2)))
@@ -57,7 +58,7 @@ P<- epo(D,npc)
 
 # save(P,file='EPO_transformation_matrix.RDATA')
 setwd(prev_dir)
-# save(P,file='EPO_transformation_matrix.RDATA')
+save(P,file='RData/EPO_transformation_matrix.RDATA')
 
 # #Project the spectra
 # Z0 <- as.matrix(spec_snvC0) %*% P    # EPO projected spectra of spec0
@@ -73,12 +74,12 @@ setwd(prev_dir)
 ##Project the library spectra into transformed spectra
 
 raw_hv_spectra<-lapply(hv_pits_DATA,function(x) {
-  spectra<-x[6:2156]
+  spectra<-x[7:2157]
   names(spectra)<-as.numeric(350:2500)
   spectra})
 
 sample_hv_details<-lapply(hv_pits_DATA,function(x) {
-  spectra<-x[1:5]
+  spectra<-x[1:6]
   spectra})
 
 pboptions(type='txt',style=3)
