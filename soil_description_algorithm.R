@@ -1,4 +1,8 @@
 ###Soil description algorithm###
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 library(tripack)
 library(SDMTools)
 library(rgl) 
@@ -20,6 +24,11 @@ load('correct_steps.RData')
 load('pr_varExp.RData')
 load('check_plots.RData')
 load('EPO_transformation_matrix.RDATA')
+<<<<<<< HEAD
+=======
+load('fanny_data_by_sample_pc_euc_no_out.RData') #see fuzzy_clustering_ground_data.R
+load('fanny_pits_pc_euc_EPO.RData') #see fuzzy_clustering.R
+>>>>>>> origin/master
 
 setwd(prev_dir)
 
@@ -35,6 +44,11 @@ sampleg_details<-lapply(ground_DATA,function(x) {
   spectra})
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> origin/master
 cont_DATA<-pblapply(rawg_spectra,correct_step)    
 trim_DATA<- pblapply(cont_DATA,function(x) trimSpec(x, wavlimits=range(500:2450))) 
 abs_DATA<-pblapply(trim_DATA,function(x) absorbance<-log(1/x))  
@@ -54,6 +68,11 @@ epo_DATA <- pblapply(snv_DATA,function(x) {
 # check_plots(filt_DATA,'Filt Spectra','Reflectance')
 # check_plots(epo_DATA,'Processed Spectra','Epo_Units')
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> origin/master
 pr_spectra<-prcomp(do.call(rbind,epo_DATA), center=T,scale=T) 
 screeplot(pr_spectra)#visualize the PC
 pr_varExp(do.call(rbind,epo_DATA))#check the acummulative variation on the data
@@ -97,9 +116,15 @@ new_details<- original_details[chiMat[,3] == 1,]
 new_pr_scores<- pr_scores[chiMat[,3] == 1,]
 
 
+<<<<<<< HEAD
 ####exclude the samples with too more than 10 outliers (20% of the the observations on a soil profile of 1m)####
 count <- table(original_details[chiMat[,3] == 0,]$Sample)
 exclude <- names(count)[count > 10]
+=======
+####exclude the samples with too more than 5 outliers####
+count <- table(original_details[chiMat[,3] == 0,]$Sample)
+exclude <- names(count)[count > 5]
+>>>>>>> origin/master
 no_out_details <- new_details[!(new_details$Sample %in% exclude),]
 no_out_details$Sample <- droplevels(no_out_details$Sample)
 
@@ -197,7 +222,10 @@ for (i in 1:number_of_classes){
 
 
 #####Bring in the fuzzy cluster of Dataset A and do some processing#####
+<<<<<<< HEAD
 source('fuzzy_single_sample.R')
+=======
+>>>>>>> origin/master
 
 num_clusters <-3  #extract the number of clusters that we want to use from 1 to 6 possibles
 fuzzy_data <-list()
@@ -209,7 +237,11 @@ for (i in 1:length(no_out_ground_DATA)){
 }
 
 length(fuzzy_data)   #one fuzzy object by sample
+<<<<<<< HEAD
 # str(fuzzy_data[[1]]) #structure of the fuzzy object
+=======
+str(fuzzy_data[[1]]) #structure of the fuzzy object
+>>>>>>> origin/master
 
 fanny_by_sample_cont <- unlist(sapply(fuzzy_data,function(x) x$clustering))
 
@@ -217,6 +249,7 @@ fanny_by_sample_cont <- unlist(sapply(fuzzy_data,function(x) x$clustering))
 spec_cluster_cont <- as.data.frame(do.call(rbind,no_out_data))
 sample3d_cluster_details<-data.frame(do.call(rbind,no_out_details),cluster=fanny_by_sample_cont)
 
+<<<<<<< HEAD
 # #####Save dataset without outlier samples and epo transformation for use later####
 # no_out_epo_clus_DATA <- split.data.frame(cbind(sample3d_cluster_details,spec_cluster_cont),sample3d_cluster_details$Sample,drop=T)
 # # save(no_out_epo_clus_DATA,file='no_out_epo_clus_DATA.RData')
@@ -224,6 +257,15 @@ sample3d_cluster_details<-data.frame(do.call(rbind,no_out_details),cluster=fanny
 # #####Visualize Dataset A clusters on a  3PCA space#### 
 palette(terrain.colors(num_clusters))
 open3d(cex=1)
+=======
+#####Save dataset without outlier samples and epo transformation for use later####
+no_out_epo_clus_DATA <- split.data.frame(cbind(sample3d_cluster_details,spec_cluster_cont),sample3d_cluster_details$Sample,drop=T)
+# save(no_out_epo_clus_DATA,file='no_out_epo_clus_DATA.RData')
+
+#####Visualize Dataset A clusters on a  3PCA space#### 
+palette(terrain.colors(num_clusters))
+# open3d(cex=1)
+>>>>>>> origin/master
 pca3d(no_out_pr_scores[,1:3],col=as.numeric(sample3d_cluster_details$cluster),
       radius=.1,
       group=sample3d_cluster_details$cluster,
@@ -259,7 +301,11 @@ for (i in 1:num_clusters){
   c2<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,2])
   c3<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,3])
   centremean <- c(c1,c2,c3)
+<<<<<<< HEAD
   plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.7),alpha=.12,add=T)
+=======
+  plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.4),alpha=.12,add=T)
+>>>>>>> origin/master
   segments3d(c(0,c1),c(0,c2),c(0,c3),lwd=2,col='black')
 }
 
@@ -294,8 +340,11 @@ abc_horizon_perc_on_cluster
 #####Visualize percentages of each traditional horizon on each cluster####
 histogram(~test_clas_details$b.master_hor|test_clas_details$cluster)
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> origin/master
 #####filter Dataset B (in_situ spectra) and EPO tronsform it####
 raw_hv_spectra<-lapply(hv_pits_DATA,function(x) {
   spectra<-x[7:2157]
@@ -340,7 +389,11 @@ sum(specMatch$pip)/nrow(specMatch)*100 ###percentage of points that are inside t
 number_of_classes_hv<-length(levels(sample3d_hv_details$b.master_hor))
 palette(terrain.colors(number_of_classes_hv))
 
+<<<<<<< HEAD
  open3d(cex=1)
+=======
+# open3d(cex=1)
+>>>>>>> origin/master
 pca3d(no_out_pr_scores[,1:3],col=as.numeric(sample3d_details$b.master_hor),
       radius=.01,
       group=sample3d_details$b.master_hor,
@@ -349,7 +402,11 @@ pca3d(no_out_pr_scores[,1:3],col=as.numeric(sample3d_details$b.master_hor),
 )
 
 plot3d(hv_projected[,1:3],
+<<<<<<< HEAD
        col=mapvalues(sample3d_hv_details$b.master_hor,from=levels(sample3d_hv_details$b.master_hor),to=palette()),
+=======
+       col=replace(sample3d_hv_details$b.master_hor,palette(),c("A1","B2","C" )),
+>>>>>>> origin/master
        type='s',
        radius=.5,
        group=sample3d_hv_details$b.master_hor,
@@ -373,7 +430,11 @@ for (i in 1:number_of_classes){
 number_of_classes_hv<-length(levels(sample3d_cluster_details$cluster))
 palette(terrain.colors(number_of_classes_hv))
 
+<<<<<<< HEAD
 #open3d(cex=1)
+=======
+# open3d(cex=1)
+>>>>>>> origin/master
 pca3d(no_out_pr_scores[,1:3],col=as.numeric(sample3d_cluster_details$cluster),
       radius=.01,
       group=sample3d_cluster_details$cluster,
@@ -385,7 +446,11 @@ number_of_classes_hv<-length(levels(sample3d_hv_details$b.master_hor))
 palette(terrain.colors(number_of_classes_hv))
 
 plot3d(hv_projected[,1:3],
+<<<<<<< HEAD
        col=mapvalues(sample3d_hv_details$b.master_hor,from=levels(sample3d_hv_details$b.master_hor),to=palette()),
+=======
+       col=replace(sample3d_hv_details$b.master_hor,palette(),c("A1","B2","C" )),
+>>>>>>> origin/master
        type='s',
        radius=.5,
        group=sample3d_hv_details$b.master_hor,
@@ -400,12 +465,19 @@ for (i in 1:num_clusters){
   c2<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,2])
   c3<- mean(no_out_pr_scores[sample3d_cluster_details$cluster==i,3])
   centremean <- c(c1,c2,c3)
+<<<<<<< HEAD
   plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.7),alpha=.12,add=T)
+=======
+  plot3d(ellipse3d(cov(no_out_pr_scores[sample3d_cluster_details$cluster==i,1:3]),col=palette()[i],centre=centremean,level=.95),alpha=.12,add=T)
+>>>>>>> origin/master
   segments3d(c(0,c1),c(0,c2),c(0,c3),lwd=2,col='black')
 }
 
 ######Bring in the fuzzy cluster of Dataset B and do some processing####
+<<<<<<< HEAD
 source('fuzzy_single_sample_in_situ.R')
+=======
+>>>>>>> origin/master
 
 for (j in 1:length(epo_hv_DATA)){  
   
@@ -553,10 +625,17 @@ histogram(~test_clas_details_hv$b.master_hor|test_clas_details_hv$cluster)
 ####Horizon predictions####
 
 ####Dataset A###
+<<<<<<< HEAD
 setwd('plots/')
 pdf('observed_vs_predicted_horizons_3clust.pdf',width=10,height=6)
 input_data <-no_out_ground_DATA
 par(mfrow=c(1,2))
+=======
+setwd('..//plots')
+pdf('observed_vs_predicted_horizons_3clust.pdf',width=10,height=6)
+input_data <-no_out_ground_DATA
+
+>>>>>>> origin/master
 for (j in 1:length(input_data)){  
 num_clusters <-3 ##select the decided number of clusters (up to 6)
 fuzzy_data <-list()
@@ -588,13 +667,22 @@ setwd(prev_dir)
 ##note : close the previous pdf to create the next one##
 
 ####Dataset B###
+<<<<<<< HEAD
 setwd('..//plots')
 par(mfrow=c(1,1))
+=======
+##bring in the fuzzy clustering of the in_situ samples##
+setwd('..//plots')
+>>>>>>> origin/master
 pdf('observed_vs_predicted_horizons_in_situ_3clust.pdf',width=10,height=6)
 input_data <-hv_pits_DATA
 
  for (j in 1:length(input_data)){  
+<<<<<<< HEAD
   num_clusters <-3 ##select the decided number of clusters (up to 6)
+=======
+  num_clusters <-3
+>>>>>>> origin/master
   fuzzy_hv_data <-list()
   for (i in 1:length(input_data)){
     fuzzy_hv_data[[i]]<- fanny_pits_pc_euc_EPO[[i]][[num_clusters]]
@@ -623,6 +711,7 @@ shell.exec('observed_vs_predicted_horizons_in_situ_3clust.pdf')
 
 setwd(prev_dir)
 
+<<<<<<< HEAD
 ####plotmemberships####
 par(mfrow=c(2,1))
 
@@ -810,3 +899,7 @@ pit<-7
 goof(data_validation$obs[data_validation$sample==levels(data_validation$sample)[pit]],data_validation$pred[data_validation$sample==levels(data_validation$sample)[pit]],col=data_validation$cluster)
 ###end###
 
+=======
+
+###end###
+>>>>>>> origin/master
